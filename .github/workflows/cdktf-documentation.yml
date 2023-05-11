@@ -1,0 +1,86 @@
+name: CDKTF Documentation
+on:
+  # push:
+  #   branches:
+  #     - main
+  #     - "release/**"
+  #   paths:
+  #     - .github/workflows/cdktf-documentation.yml
+  #     - website/docs/**
+  # schedule:
+  #   - cron: "0 0 * * WED"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.build-matrix.outputs.matrix }}
+    container:
+      image: docker.mirror.hashicorp.services/hashicorp/jsii-terraform
+    env:
+      CHECKPOINT_DISABLE: "1"
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18.x"
+      - name: Install cdktf-registry-docs
+        run: npm install -g cdktf-registry-docs@latest # This should have a pinned version
+      - name: Build matrix
+        id: build-matrix
+        run: |
+          echo "matrix=$(cdktf-registry-docs ci-matrix --files='r/ecs_cluster.html.markdown,r/ecs_task_definition.html.markdown,r/s3_bucket.html.markdown' .)" >> $GITHUB_OUTPUT
+
+  cdktfDocs:
+    needs:
+      - matrix
+    runs-on: ubuntu-latest
+    container:
+      image: docker.mirror.hashicorp.services/hashicorp/jsii-terraform
+    env:
+      CHECKPOINT_DISABLE: "1"
+    timeout-minutes: 60
+    strategy:
+      fail-fast: true
+      matrix: ${{fromJSON(needs.matrix.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18.x"
+      - name: Install cdktf-registry-docs
+        run: npm install -g cdktf-registry-docs@latest # This should have a pinned version
+      - name: Run conversion
+        run: |
+          cdktf-registry-docs convert --files="${{ matrix }}" .
+      # TODO: Uploading the folder might be a problem once we already have something in there before the run. Maybe it's better to commit to a branch instead?
+      - name: Upload converted documentation
+        uses: actions/upload-artifact@v3
+        with:
+          name: cdktf-docs
+          path: website/docs/cdktf
+
+  cdktfDocsPr:
+    needs:
+      - cdktfDocs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/download-artifact@v3
+        with:
+          name: cdktf-docs
+          path: website/docs/cdktf
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: "cdktf: update documentation"
+          title: "cdktf: update documentation"
+          body: "This PR updates the documentation for the following resources: ${{ needs.cdktfDocs.outputs }}"
