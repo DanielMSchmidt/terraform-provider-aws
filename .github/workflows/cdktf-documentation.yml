@@ -79,6 +79,10 @@ jobs:
           node-version: "18.x"
       - name: Install cdktf-registry-docs
         run: npm install -g cdktf-registry-docs@latest # This should have a pinned version
+      - name: DEBUG
+        run: |
+          echo "Files=${{ matrix.files }}"
+          echo "JSON FILES=${{ fromJSON(matrix.files) }}"
       - name: Run conversion
         run: |
           cdktf-registry-docs convert --files="${{ matrix.files }}" --provider-from-registry="hashicorp/aws@~> ${{ needs.releasedVersion.outputs.version }}" .
