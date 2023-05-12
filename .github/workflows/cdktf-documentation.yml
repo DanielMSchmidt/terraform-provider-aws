@@ -50,7 +50,8 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: true
-      matrix: ${{fromJSON(needs.matrix.outputs.matrix)}}
+      matrix:
+        files: ${{fromJSON(needs.matrix.outputs.matrix)}}
     steps:
       - uses: actions/checkout@v3.1.0
       - name: Setup Node.js
@@ -61,7 +62,7 @@ jobs:
         run: npm install -g cdktf-registry-docs@latest # This should have a pinned version
       - name: Run conversion
         run: |
-          cdktf-registry-docs convert --files="${{ matrix }}" .
+          cdktf-registry-docs convert --files="${{ matrix.files }}" .
       # TODO: Uploading the folder might be a problem once we already have something in there before the run. Maybe it's better to commit to a branch instead?
       - name: Upload converted documentation
         uses: actions/upload-artifact@v3
