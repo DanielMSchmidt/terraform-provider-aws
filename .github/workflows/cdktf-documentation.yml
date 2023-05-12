@@ -85,8 +85,6 @@ jobs:
       - name: DEBUG
         run: |
           echo "Files=${{ matrix.files }}"
-          echo "${{ toJSON(matrix.files) }}"
-          echo '${{ toJSON(matrix.files) }}' | jq
       - name: DEBUG2
         run: |
           echo "JSON=${{ toJSON(matrix.files) }}"
