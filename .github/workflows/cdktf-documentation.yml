@@ -87,6 +87,12 @@ jobs:
           echo "Files=${{ matrix.files }}"
           echo "${{ toJSON(matrix.files) }}"
           echo '${{ toJSON(matrix.files) }}' | jq
+      - name: DEBUG2
+        run: |
+          echo "JSON=${{ toJSON(matrix.files) }}"
+      - name: DEBUG3
+        run: |
+          echo '${{ toJSON(matrix.files) }}' | jq
       - name: Run conversion
         run: |
           cdktf-registry-docs convert --files="${{ matrix.files }}" --provider-from-registry="hashicorp/aws@~> ${{ needs.releasedVersion.outputs.version }}" .
