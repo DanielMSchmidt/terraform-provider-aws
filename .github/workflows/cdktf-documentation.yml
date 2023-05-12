@@ -38,6 +38,9 @@ jobs:
         id: build-matrix
         run: |
           echo "matrix=$(npx cdktf-registry-docs ci-matrix --files='r/ecs_cluster.html.markdown,r/ecs_task_definition.html.markdown,r/s3_bucket.html.markdown' .)" >> $GITHUB_OUTPUT
+      - name: Debug
+        run: |
+          echo "matrix=${{ steps.build-matrix.outputs.matrix }}"
 
   releasedVersion:
     runs-on: ubuntu-latest
