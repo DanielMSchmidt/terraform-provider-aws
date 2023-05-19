@@ -45,6 +45,14 @@ jobs:
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v3.1.0
+      - name: Get yarn cache directory path
+        id: global-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v3.0.11
+        id: global-cache
+        with:
+          path: ${{ steps.global-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-integration-yarn-${{ hashFiles('**/yarn.lock') }}
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -56,6 +64,7 @@ jobs:
           cdktf-registry-docs convert --files='r/ecs_cluster.html.markdown,r/ecs_task_definition.html.markdown,r/s3_bucket.html.markdown' --provider-from-registry="hashicorp/aws@~> ${{ needs.releasedVersion.outputs.version }}" .
         env:
           DEBUG: 1
+          TF_PLUGIN_CACHE_DIR: ${{ steps.global-cache-dir-path.outputs.dir }}/terraform-plugins
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
