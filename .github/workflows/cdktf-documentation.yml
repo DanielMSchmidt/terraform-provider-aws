@@ -61,7 +61,7 @@ jobs:
         run: npm install -g cdktf-registry-docs@latest # This should have a pinned version
       - name: Run conversion
         run: |
-          cdktf-registry-docs convert --files='r/ecs_cluster.html.markdown,r/ecs_task_definition.html.markdown,r/s3_bucket.html.markdown' --provider-from-registry="hashicorp/aws@~> ${{ needs.releasedVersion.outputs.version }}" .
+          cdktf-registry-docs convert --files='r/ecs_cluster.html.markdown,r/ecs_task_definition.html.markdown,r/s3_bucket.html.markdown' --parallel-conversions-per-document=1 --provider-from-registry="hashicorp/aws@~> ${{ needs.releasedVersion.outputs.version }}" .
         env:
           DEBUG: 1
           TF_PLUGIN_CACHE_DIR: ${{ steps.global-cache-dir-path.outputs.dir }}/terraform-plugins
