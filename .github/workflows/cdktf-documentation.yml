@@ -139,6 +139,8 @@ jobs:
           ref: cdktf-docs-conversion-${{ github.run_id }}-${{ github.run_number }}
       - name: Create pull request
         run: |
-          gh pr create --title "cdktf: update cdktf docs" --body "This PR was automatically created by the cdktf-docs-conversion workflow." --base main --repo DanielMSchmidt/terraform-provider-aws
+          git remote
+          gh repo set-default --unset
+          gh pr create --title "cdktf: update cdktf docs" --body "This PR was automatically created by the cdktf-docs-conversion workflow." --base main --repo DanielMSchmidt/terraform-provider-aws --head origin:cdktf-docs-conversion-${{ github.run_id }}-${{ github.run_number }}
         env:
           GH_TOKEN: ${{ secrets.MACHINE_USER_PAT }}
