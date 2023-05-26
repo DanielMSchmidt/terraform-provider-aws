@@ -1,0 +1,144 @@
+name: CDKTF Documentation
+on:
+  schedule:
+    - cron: "0 0 * * WED"
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  setupBranch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - run: git config --global user.email "github-team-tf-cdk@hashicorp.com"
+      - run: git config --global user.name "team-tf-cdk"
+      - run: git checkout -b cdktf-docs-conversion-${{ github.run_id }}-${{ github.run_number }}
+      - run: git push origin cdktf-docs-conversion-${{ github.run_id }}-${{ github.run_number }}
+
+  buildMatrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    container:
+      image: docker.mirror.hashicorp.services/hashicorp/jsii-terraform
+    env:
+      CHECKPOINT_DISABLE: "1"
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - name: Get yarn cache directory path
+        id: global-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v3.0.11
+        id: global-cache
+        with:
+          path: ${{ steps.global-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-integration-yarn-${{ hashFiles('**/yarn.lock') }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18.x"
+      - name: Install cdktf-registry-docs
+        run: npm install -g cdktf-registry-docs@1.8.0
+      - name: Create plugin cache
+        run: |
+          mkdir -p ${{ steps.global-cache-dir-path.outputs.dir }}/terraform-plugins
+      - id: set-matrix
+        run: |
+          matrix=$(cdktf-registry-docs ci-matrix --files='*/ec2_*.html.markdown,*/lambda_*.html.markdown' .)
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+        env:
+          TF_PLUGIN_CACHE_DIR: ${{ steps.global-cache-dir-path.outputs.dir }}/terraform-plugins
+
+  releasedVersion:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.remove-leading-v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-ecosystem/action-get-latest-tag@v1
+        id: get-latest-tag
+        with:
+          semver_only: true
+
+      - name: Remove leading v from tag
+        id: remove-leading-v
+        run: |
+          VERSION='${{ steps.get-latest-tag.outputs.tag }}'
+          echo "VERSION=${VERSION:1}" >> $GITHUB_OUTPUT
+
+  cdktfDocs:
+    needs:
+      - releasedVersion
+      - buildMatrix
+      - setupBranch
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        files: ${{fromJSON(needs.buildMatrix.outputs.matrix)}}
+    container:
+      image: docker.mirror.hashicorp.services/hashicorp/jsii-terraform
+    env:
+      CHECKPOINT_DISABLE: "1"
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - run: git config --global user.email "github-team-tf-cdk@hashicorp.com"
+      - run: git config --global user.name "team-tf-cdk"
+      - run: git config --global --add safe.directory $(pwd)
+      - name: Get yarn cache directory path
+        id: global-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v3.0.11
+        id: global-cache
+        with:
+          path: ${{ steps.global-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-integration-yarn-${{ hashFiles('**/yarn.lock') }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18.x"
+      - name: Install cdktf-registry-docs
+        run: npm install -g cdktf-registry-docs@1.8.0
+      - name: Run conversion
+        run: |
+          cdktf-registry-docs convert \
+            --files='${{ matrix.files }}' \
+            --languages='typescript,python' \
+            --parallel-conversions-per-document=1 \
+            --provider-from-registry="hashicorp/aws@~> ${{ needs.releasedVersion.outputs.version }}" \
+            .
+        env:
+          TF_PLUGIN_CACHE_DIR: ${{ steps.global-cache-dir-path.outputs.dir }}/terraform-plugins
+      - name: Commit changes
+        run: |
+          git checkout -b cdktf-docs-conversion-${{ github.run_id }}-${{ github.run_number }}
+          git add .
+          git commit -m "cdktf: update ${{ matrix.files }}"
+          git pull origin cdktf-docs-conversion-${{ github.run_id }}-${{ github.run_number }} --rebase
+          git push origin cdktf-docs-conversion-${{ github.run_id }}-${{ github.run_number }}
+
+  createPullRequest:
+    needs:
+      - cdktfDocs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: cdktf-docs-conversion-${{ github.run_id }}-${{ github.run_number }}
+      - name: Create pull request
+        run: |
+          gh pr create --title "cdktf: update cdktf docs" --body "This PR was automatically created by the cdktf-docs-conversion workflow." --base main
+        env:
+          GH_TOKEN: ${{ secrets.MACHINE_USER_PAT }}
