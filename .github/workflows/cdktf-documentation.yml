@@ -140,3 +140,5 @@ jobs:
       - name: Create pull request
         run: |
           gh pr create --title "cdktf: update cdktf docs" --body "This PR was automatically created by the cdktf-docs-conversion workflow." --base main
+        env:
+          GH_TOKEN: ${{ github.token }}
