@@ -30,7 +30,7 @@ jobs:
       - buildMatrix
     strategy:
       fail-fast: false
-      matrix: ${{fromJSON(needs.buildMatrix.outputs.examples)}}
+      matrix: ${{fromJSON(needs.buildMatrix.outputs.matrix)}}
     steps:
       - run: |
           echo "Running ${{ matrix.files }}"
