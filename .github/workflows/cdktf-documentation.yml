@@ -117,3 +117,5 @@ jobs:
           commit-message: ": update documentation"
           title: ": update documentation"
           body: "This PR updates the cdktf related documentation based on the current HCL-based documentation. It is automatically created by the cdktf-documentation GitHub action."
+          token: ${{ secrets.MACHINE_USER_PAT }}
+          push-to-fork: machine-user/fork-of-repository
