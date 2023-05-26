@@ -15,6 +15,15 @@ permissions:
   pull-requests: write
 
 jobs:
+  setupBranch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - run: git config --global user.email "github-team-tf-cdk@hashicorp.com"
+      - run: git config --global user.name "team-tf-cdk"
+      - run: git checkout -b cdktf-docs-conversion-${{ github.run_id }}-${{ github.run_number }}
+      - run: git push origin cdktf-docs-conversion-${{ github.run_id }}-${{ github.run_number }}
+
   buildMatrix:
     runs-on: ubuntu-latest
     outputs:
@@ -72,6 +81,7 @@ jobs:
     needs:
       - releasedVersion
       - buildMatrix
+      - setupBranch
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -110,12 +120,22 @@ jobs:
             .
         env:
           TF_PLUGIN_CACHE_DIR: ${{ steps.global-cache-dir-path.outputs.dir }}/terraform-plugins
+      - name: Commit changes
+        run: |
+          git checkout -b cdktf-docs-conversion-${{ github.run_id }}-${{ github.run_number }}
+          git add .
+          git commit -m "cdktf: update ${{ matrix.files }}"
+          git pull origin cdktf-docs-conversion-${{ github.run_id }}-${{ github.run_number }} --rebase
+          git push origin cdktf-docs-conversion-${{ github.run_id }}-${{ github.run_number }}
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
+  createPullRequest:
+    needs:
+      - cdktfDocs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
         with:
-          commit-message: "cdktf: update documentation"
-          title: "cdktf: update documentation"
-          body: "This PR updates the cdktf related documentation based on the current HCL-based documentation. It is automatically created by the cdktf-documentation GitHub action."
-          token: ${{ secrets.MACHINE_USER_PAT }}
-          base: parallelize-cdktf-conversion
+          ref: cdktf-docs-conversion-${{ github.run_id }}-${{ github.run_number }}
+      - name: Create pull request
+        run: |
+          gh pr create --title "cdktf: update cdktf docs" --body "This PR was automatically created by the cdktf-docs-conversion workflow." --base main
