@@ -1,0 +1,69 @@
+---
+subcategory: "Audit Manager"
+layout: "aws"
+page_title: "AWS: aws_auditmanager_framework"
+description: |-
+  Terraform resource for managing an AWS Audit Manager Framework.
+---
+
+# Resource: aws_auditmanager_framework
+
+Terraform resource for managing an AWS Audit Manager Framework.
+
+## Example Usage
+
+### Basic Usage
+
+```terraform
+resource "aws_auditmanager_framework" "test" {
+  name = "example"
+
+  control_sets {
+    name = "example"
+    controls {
+      id = aws_auditmanager_control.test.id
+    }
+  }
+}
+```
+
+## Argument Reference
+
+The following arguments are required:
+
+* `name` - (Required) Name of the framework.
+* `controlSets` - (Required) Control sets that are associated with the framework. See [`controlSets`](#control_sets) below.
+
+The following arguments are optional:
+
+* `complianceType` - (Optional) Compliance type that the new custom framework supports, such as `cis` or `hipaa`.
+* `description` - (Optional) Description of the framework.
+* `tags` - (Optional) A map of tags to assign to the framework. If configured with a provider [`defaultTags` configuration block](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block) present, tags with matching keys will overwrite those defined at the provider-level.
+
+### control_sets
+
+* `name` - (Required) Name of the control set.
+* `controls` - (Required) List of controls within the control set. See [`controls`](#controls) below.
+
+### controls
+
+* `id` - (Required) Unique identifier of the control.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `arn` - Amazon Resource Name (ARN) of the framework.
+* `controlSets[*]Id` - Unique identifier for the framework control set.
+* `id` - Unique identifier for the framework.
+* `frameworkType` - Framework type, such as a custom framework or a standard framework.
+
+## Import
+
+Audit Manager Framework can be imported using the framework `id`, e.g.,
+
+```
+$ terraform import aws_auditmanager_framework.example abc123-de45
+```
+
+<!-- cache-key: cdktf-0.17.0-pre.15 input-ee23aef7cfb91158e2fe64353e2a97d4a4b8eb84de2df24c6576bb28b4a538ef -->

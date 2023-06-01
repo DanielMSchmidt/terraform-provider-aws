@@ -1,0 +1,43 @@
+---
+subcategory: "AppSync"
+layout: "aws"
+page_title: "AWS: aws_appsync_domain_name_api_association"
+description: |-
+  Provides an AppSync API Association.
+---
+
+# Resource: aws_appsync_domain_name_api_association
+
+Provides an AppSync API Association.
+
+## Example Usage
+
+```terraform
+resource "aws_appsync_domain_name_api_association" "example" {
+  api_id      = aws_appsync_graphql_api.example.id
+  domain_name = aws_appsync_domain_name.example.domain_name
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `apiId` - (Required) API ID.
+* `domainName` - (Required) Appsync domain name.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - Appsync domain name.
+
+## Import
+
+`awsAppsyncDomainNameApiAssociation` can be imported using the AppSync domain name, e.g.,
+
+```
+$ terraform import aws_appsync_domain_name_api_association.example example.com
+```
+
+<!-- cache-key: cdktf-0.17.0-pre.15 input-d5e0c5017d1050feb665fc1a65cf52af4e161435d02f47aea5142d82fe58c500 -->

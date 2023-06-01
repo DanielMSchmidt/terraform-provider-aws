@@ -1,0 +1,69 @@
+---
+subcategory: "Auto Scaling"
+layout: "aws"
+page_title: "AWS: aws_autoscaling_attachment"
+description: |-
+  Provides an AutoScaling Group Attachment resource.
+---
+
+# Resource: aws_autoscaling_attachment
+
+Provides an Auto Scaling Attachment resource.
+
+~> **NOTE on Auto Scaling Groups and ASG Attachments:** Terraform currently provides
+both a standalone [`awsAutoscalingAttachment`](autoscaling_attachment.html) resource
+(describing an ASG attached to an ELB or ALB), and an [`awsAutoscalingGroup`](autoscaling_group.html)
+with `loadBalancers` and `targetGroupArns` defined in-line. These two methods are not
+mutually-exclusive. If `awsAutoscalingAttachment` resources are used, either alone or with inline
+`loadBalancers` or `targetGroupArns`, the `awsAutoscalingGroup` resource must be configured
+to ignore changes to the `loadBalancers` and `targetGroupArns` arguments within a
+[`lifecycle` configuration block](https://www.terraform.io/docs/configuration/meta-arguments/lifecycle.html).
+
+## Example Usage
+
+```terraform
+# Create a new load balancer attachment
+resource "aws_autoscaling_attachment" "asg_attachment_bar" {
+  autoscaling_group_name = aws_autoscaling_group.asg.id
+  elb                    = aws_elb.bar.id
+}
+```
+
+```terraform
+# Create a new ALB Target Group attachment
+resource "aws_autoscaling_attachment" "asg_attachment_bar" {
+  autoscaling_group_name = aws_autoscaling_group.asg.id
+  lb_target_group_arn    = aws_lb_target_group.test.arn
+}
+```
+
+## With An AutoScaling Group Resource
+
+```terraform
+resource "aws_autoscaling_group" "asg" {
+  # ... other configuration ...
+
+  lifecycle {
+    ignore_changes = [load_balancers, target_group_arns]
+  }
+}
+
+resource "aws_autoscaling_attachment" "asg_attachment_bar" {
+  autoscaling_group_name = aws_autoscaling_group.asg.id
+  elb                    = aws_elb.test.id
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `autoscalingGroupName` - (Required) Name of ASG to associate with the ELB.
+* `elb` - (Optional) Name of the ELB.
+* `lbTargetGroupArn` - (Optional) ARN of a load balancer target group.
+
+## Attributes Reference
+
+No additional attributes are exported.
+
+<!-- cache-key: cdktf-0.17.0-pre.15 input-cce14bd0c24bf5cb3615a282f5fcb2e60c2e92e64c2bf49fac18ed060212065f -->

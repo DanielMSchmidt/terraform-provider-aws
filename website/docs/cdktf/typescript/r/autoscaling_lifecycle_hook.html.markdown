@@ -1,0 +1,82 @@
+---
+subcategory: "Auto Scaling"
+layout: "aws"
+page_title: "AWS: aws_autoscaling_lifecycle_hook"
+description: |-
+  Provides an AutoScaling Lifecycle Hook resource.
+---
+
+# Resource: aws_autoscaling_lifecycle_hook
+
+Provides an AutoScaling Lifecycle Hook resource.
+
+~> **NOTE:** Terraform has two types of ways you can add lifecycle hooks - via
+the `initialLifecycleHook` attribute from the
+[`awsAutoscalingGroup`](/docs/providers/aws/r/autoscaling_group.html)
+resource, or via this one. Hooks added via this resource will not be added
+until the autoscaling group has been created, and depending on your
+[capacity](/docs/providers/aws/r/autoscaling_group.html#waiting-for-capacity)
+settings, after the initial instances have been launched, creating unintended
+behavior. If you need hooks to run on all instances, add them with
+`initialLifecycleHook` in
+[`awsAutoscalingGroup`](/docs/providers/aws/r/autoscaling_group.html),
+but take care to not duplicate those hooks with this resource.
+
+## Example Usage
+
+```terraform
+resource "aws_autoscaling_group" "foobar" {
+  availability_zones   = ["us-west-2a"]
+  name                 = "terraform-test-foobar5"
+  health_check_type    = "EC2"
+  termination_policies = ["OldestInstance"]
+
+  tag {
+    key                 = "Foo"
+    value               = "foo-bar"
+    propagate_at_launch = true
+  }
+}
+
+resource "aws_autoscaling_lifecycle_hook" "foobar" {
+  name                   = "foobar"
+  autoscaling_group_name = aws_autoscaling_group.foobar.name
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 2000
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_LAUNCHING"
+
+  notification_metadata = jsonencode({
+    foo = "bar"
+  })
+
+  notification_target_arn = "arn:aws:sqs:us-east-1:444455556666:queue1*"
+  role_arn                = "arn:aws:iam::123456789012:role/S3Access"
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `name` - (Required) Name of the lifecycle hook.
+* `autoscalingGroupName` - (Required) Name of the Auto Scaling group to which you want to assign the lifecycle hook
+* `defaultResult` - (Optional) Defines the action the Auto Scaling group should take when the lifecycle hook timeout elapses or if an unexpected failure occurs. The value for this parameter can be either CONTINUE or ABANDON. The default value for this parameter is ABANDON.
+* `heartbeatTimeout` - (Optional) Defines the amount of time, in seconds, that can elapse before the lifecycle hook times out. When the lifecycle hook times out, Auto Scaling performs the action defined in the DefaultResult parameter
+* `lifecycleTransition` - (Required) Instance state to which you want to attach the lifecycle hook. For a list of lifecycle hook types, see [describe-lifecycle-hook-types](https://docs.aws.amazon.com/cli/latest/reference/autoscaling/describe-lifecycle-hook-types.html#examples)
+* `notificationMetadata` - (Optional) Contains additional information that you want to include any time Auto Scaling sends a message to the notification target.
+* `notificationTargetArn` - (Optional) ARN of the notification target that Auto Scaling will use to notify you when an instance is in the transition state for the lifecycle hook. This ARN target can be either an SQS queue or an SNS topic.
+* `roleArn` - (Optional) ARN of the IAM role that allows the Auto Scaling group to publish to the specified notification target.
+
+## Attributes Reference
+
+No additional attributes are exported.
+
+## Import
+
+AutoScaling Lifecycle Hooks can be imported using the role autoscaling_group_name and name separated by `/`.
+
+```
+$ terraform import aws_autoscaling_lifecycle_hook.test-lifecycle-hook asg-name/lifecycle-hook-name
+```
+
+<!-- cache-key: cdktf-0.17.0-pre.15 input-8cd398f104e36acb391fe73de50a96ff1d3b3cd1a9e29c1dbb696348f6248400 -->
