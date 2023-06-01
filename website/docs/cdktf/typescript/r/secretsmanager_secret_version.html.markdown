@@ -1,0 +1,85 @@
+---
+subcategory: "Secrets Manager"
+layout: "aws"
+page_title: "AWS: aws_secretsmanager_secret_version"
+description: |-
+  Provides a resource to manage AWS Secrets Manager secret version including its secret value
+---
+
+# Resource: aws_secretsmanager_secret_version
+
+Provides a resource to manage AWS Secrets Manager secret version including its secret value. To manage secret metadata, see the [`awsSecretsmanagerSecret` resource](/docs/providers/aws/r/secretsmanager_secret.html).
+
+~> **NOTE:** If the `awscurrent` staging label is present on this version during resource deletion, that label cannot be removed and will be skipped to prevent errors when fully deleting the secret. That label will leave this secret version active even after the resource is deleted from Terraform unless the secret itself is deleted. Move the `awscurrent` staging label before or after deleting this resource from Terraform to fully trigger version deprecation if necessary.
+
+## Example Usage
+
+### Simple String Value
+
+```terraform
+resource "aws_secretsmanager_secret_version" "example" {
+  secret_id     = aws_secretsmanager_secret.example.id
+  secret_string = "example-string-to-protect"
+}
+```
+
+### Key-Value Pairs
+
+Secrets Manager also accepts key-value pairs in JSON.
+
+```terraform
+# The map here can come from other supported configurations
+# like locals, resource attribute, map() built-in, etc.
+variable "example" {
+  default = {
+    key1 = "value1"
+    key2 = "value2"
+  }
+
+  type = map(string)
+}
+
+resource "aws_secretsmanager_secret_version" "example" {
+  secret_id     = aws_secretsmanager_secret.example.id
+  secret_string = jsonencode(var.example)
+}
+```
+
+-> **Note:** In Terraform 0.14 and later, use `sensitive = true` to protect the values of the variable from being printed in logs and console output (see [Protect Sensitive Input Variables](https://learn.hashicorp.com/tutorials/terraform/sensitive-variables)).
+
+Reading key-value pairs from JSON back into a native Terraform map can be accomplished in Terraform 0.12 and later with the [`jsondecode()` function](https://www.terraform.io/docs/configuration/functions/jsondecode.html):
+
+```terraform
+output "example" {
+  value = jsondecode(aws_secretsmanager_secret_version.example.secret_string)["key1"]
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `secretId` - (Required) Specifies the secret to which you want to add a new version. You can specify either the Amazon Resource Name (ARN) or the friendly name of the secret. The secret must already exist.
+* `secretString` - (Optional) Specifies text data that you want to encrypt and store in this version of the secret. This is required if secret_binary is not set.
+* `secretBinary` - (Optional) Specifies binary data that you want to encrypt and store in this version of the secret. This is required if secret_string is not set. Needs to be encoded to base64.
+* `versionStages` - (Optional) Specifies a list of staging labels that are attached to this version of the secret. A staging label must be unique to a single version of the secret. If you specify a staging label that's already associated with a different version of the same secret then that staging label is automatically removed from the other version and attached to this version. If you do not specify a value, then AWS Secrets Manager automatically moves the staging label `awscurrent` to this new version on creation.
+
+~> **NOTE:** If `versionStages` is configured, you must include the `awscurrent` staging label if this secret version is the only version or if the label is currently present on this secret version, otherwise Terraform will show a perpetual difference.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `arn` - The ARN of the secret.
+* `id` - A pipe delimited combination of secret ID and version ID.
+* `versionId` - The unique identifier of the version of the secret.
+
+## Import
+
+`awsSecretsmanagerSecretVersion` can be imported by using the secret ID and version ID, e.g.,
+
+```
+$ terraform import aws_secretsmanager_secret_version.example 'arn:aws:secretsmanager:us-east-1:123456789012:secret:example-123456|xxxxx-xxxxxxx-xxxxxxx-xxxxx'
+```
+
+<!-- cache-key: cdktf-0.17.0-pre.15 input-e065343b0b7b9a6fa133ce0c389c63b2992b56c7e82c9554c6cb437cf85512bc -->
