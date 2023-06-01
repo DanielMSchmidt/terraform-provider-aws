@@ -54,7 +54,7 @@ jobs:
           mkdir -p ${{ steps.global-cache-dir-path.outputs.dir }}/terraform-plugins
       - id: set-matrix
         run: |
-          matrix=$(cdktf-registry-docs ci-matrix --files='*/ec2_*.html.markdown,*/lambda_*.html.markdown' .)
+          matrix=$(cdktf-registry-docs ci-matrix --max-runners=30 .)
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
         env:
           TF_PLUGIN_CACHE_DIR: ${{ steps.global-cache-dir-path.outputs.dir }}/terraform-plugins
