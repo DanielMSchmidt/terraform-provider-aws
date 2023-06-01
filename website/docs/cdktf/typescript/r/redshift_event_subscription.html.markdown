@@ -1,0 +1,79 @@
+---
+subcategory: "Redshift"
+layout: "aws"
+page_title: "AWS: aws_redshift_event_subscription"
+description: |-
+  Provides a Redshift event subscription resource.
+---
+
+# Resource: aws_redshift_event_subscription
+
+Provides a Redshift event subscription resource.
+
+## Example Usage
+
+```terraform
+resource "aws_redshift_cluster" "default" {
+  cluster_identifier = "default"
+  database_name      = "default"
+
+  # ...
+}
+
+resource "aws_sns_topic" "default" {
+  name = "redshift-events"
+}
+
+resource "aws_redshift_event_subscription" "default" {
+  name          = "redshift-event-sub"
+  sns_topic_arn = aws_sns_topic.default.arn
+
+  source_type = "cluster"
+  source_ids  = [aws_redshift_cluster.default.id]
+
+  severity = "INFO"
+
+  event_categories = [
+    "configuration",
+    "management",
+    "monitoring",
+    "security",
+  ]
+
+  tags = {
+    Name = "default"
+  }
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `name` - (Required) The name of the Redshift event subscription.
+* `snsTopicArn` - (Required) The ARN of the SNS topic to send events to.
+* `sourceIds` - (Optional) A list of identifiers of the event sources for which events will be returned. If not specified, then all sources are included in the response. If specified, a `sourceType` must also be specified.
+* `sourceType` - (Optional) The type of source that will be generating the events. Valid options are `cluster`, `clusterParameterGroup`, `clusterSecurityGroup`, `clusterSnapshot`, or `scheduledAction`. If not set, all sources will be subscribed to.
+* `severity` - (Optional) The event severity to be published by the notification subscription. Valid options are `info` or `error`. Default value of `info`.
+* `eventCategories` - (Optional) A list of event categories for a SourceType that you want to subscribe to. See https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-event-notifications.html or run `aws redshift describe-event-categories`.
+* `enabled` - (Optional) A boolean flag to enable/disable the subscription. Defaults to `true`.
+* `tags` - (Optional) A map of tags to assign to the resource. If configured with a provider [`defaultTags` configuration block](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block) present, tags with matching keys will overwrite those defined at the provider-level.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `arn` - Amazon Resource Name (ARN) of the Redshift event notification subscription
+* `id` - The name of the Redshift event notification subscription
+* `customerAwsId` - The AWS customer account associated with the Redshift event notification subscription
+* `tagsAll` - A map of tags assigned to the resource, including those inherited from the provider [`defaultTags` configuration block](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block).
+
+## Import
+
+Redshift Event Subscriptions can be imported using the `name`, e.g.,
+
+```
+$ terraform import aws_redshift_event_subscription.default redshift-event-sub
+```
+
+<!-- cache-key: cdktf-0.17.0-pre.15 input-dc72785533ca24f4fa78e8ff753532b96e9f3a82bd3d0fcc2e8d374a2e49f2c5 -->
