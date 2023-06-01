@@ -1,0 +1,50 @@
+---
+subcategory: "IoT Core"
+layout: "aws"
+page_title: "AWS: aws_iot_topic_rule_destination"
+description: |-
+    Creates and manages an AWS IoT topic rule destination
+---
+
+# Resource: aws_iot_topic_rule_destination
+
+## Example Usage
+
+```terraform
+resource "aws_iot_topic_rule_destination" "example" {
+  vpc_configuration {
+    role_arn        = aws_iam_role.example.arn
+    security_groups = [aws_security_group.example.id]
+    subnet_ids      = aws_subnet.example[*].id
+    vpc_id          = aws_vpc.example.id
+  }
+}
+```
+
+## Argument Reference
+
+* `enabled` - (Optional) Whether or not to enable the destination. Default: `true`.
+* `vpcConfiguration` - (Required) Configuration of the virtual private cloud (VPC) connection. For more info, see the [AWS documentation](https://docs.aws.amazon.com/iot/latest/developerguide/vpc-rule-action.html).
+
+The `vpcConfiguration` object takes the following arguments:
+
+* `roleArn` - (Required) The ARN of a role that has permission to create and attach to elastic network interfaces (ENIs).
+* `securityGroups` - (Optional) The security groups of the VPC destination.
+* `subnetIds` - (Required) The subnet IDs of the VPC destination.
+* `vpcId` - (Required) The ID of the VPC.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `arn` - The ARN of the topic rule destination
+
+## Import
+
+IoT topic rule destinations can be imported using the `arn`, e.g.,
+
+```
+$ terraform import aws_iot_topic_rule_destination.example arn:aws:iot:us-west-2:123456789012:ruledestination/vpc/2ce781c8-68a6-4c52-9c62-63fe489ecc60
+```
+
+<!-- cache-key: cdktf-0.17.0-pre.15 input-14918e651c47669d0a2766b5ef0f06035f97d8b87c9b9905ecdcd93598f4d3a3 -->
