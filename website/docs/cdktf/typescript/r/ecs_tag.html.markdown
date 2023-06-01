@@ -1,0 +1,55 @@
+---
+subcategory: "ECS (Elastic Container)"
+layout: "aws"
+page_title: "AWS: aws_ecs_tag"
+description: |-
+  Manages an individual ECS resource tag
+---
+
+# Resource: aws_ecs_tag
+
+Manages an individual ECS resource tag. This resource should only be used in cases where ECS resources are created outside Terraform (e.g., ECS Clusters implicitly created by Batch Compute Environments).
+
+~> **NOTE:** This tagging resource should not be combined with the Terraform resource for managing the parent resource. For example, using `awsEcsCluster` and `awsEcsTag` to manage tags of the same ECS Cluster will cause a perpetual difference where the `awsEcsCluster` resource will try to remove the tag being added by the `awsEcsTag` resource.
+
+~> **NOTE:** This tagging resource does not use the [provider `ignoreTags` configuration](/docs/providers/aws/index.html#ignore_tags).
+
+## Example Usage
+
+```terraform
+resource "aws_batch_compute_environment" "example" {
+  compute_environment_name = "example"
+  service_role             = aws_iam_role.example.arn
+  type                     = "UNMANAGED"
+}
+
+resource "aws_ecs_tag" "example" {
+  resource_arn = aws_batch_compute_environment.example.ecs_cluster_arn
+  key          = "Name"
+  value        = "Hello World"
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `resourceArn` - (Required) Amazon Resource Name (ARN) of the ECS resource to tag.
+* `key` - (Required) Tag name.
+* `value` - (Required) Tag value.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - ECS resource identifier and key, separated by a comma (`,`)
+
+## Import
+
+`awsEcsTag` can be imported by using the ECS resource identifier and key, separated by a comma (`,`), e.g.,
+
+```
+$ terraform import aws_ecs_tag.example arn:aws:ecs:us-east-1:123456789012:cluster/example,Name
+```
+
+<!-- cache-key: cdktf-0.17.0-pre.15 input-685d5be46c6d9f39935529ed052fe0e830e4761098e5e7593da06e8532d077f8 -->
