@@ -1,0 +1,49 @@
+---
+subcategory: "API Gateway V2"
+layout: "aws"
+page_title: "AWS: aws_apigatewayv2_api_mapping"
+description: |-
+  Manages an Amazon API Gateway Version 2 API mapping.
+---
+
+# Resource: aws_apigatewayv2_api_mapping
+
+Manages an Amazon API Gateway Version 2 API mapping.
+More information can be found in the [Amazon API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html).
+
+## Example Usage
+
+### Basic
+
+```terraform
+resource "aws_apigatewayv2_api_mapping" "example" {
+  api_id      = aws_apigatewayv2_api.example.id
+  domain_name = aws_apigatewayv2_domain_name.example.id
+  stage       = aws_apigatewayv2_stage.example.id
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `apiId` - (Required) API identifier.
+* `domainName` - (Required) Domain name. Use the [`awsApigatewayv2DomainName`](/docs/providers/aws/r/apigatewayv2_domain_name.html) resource to configure a domain name.
+* `stage` - (Required) API stage. Use the [`awsApigatewayv2Stage`](/docs/providers/aws/r/apigatewayv2_stage.html) resource to configure an API stage.
+* `apiMappingKey` - (Optional) The API mapping key. Refer to [REST API](https://docs.aws.amazon.com/apigateway/latest/developerguide/rest-api-mappings.html), [HTTP API](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-mappings.html) or [WebSocket API](https://docs.aws.amazon.com/apigateway/latest/developerguide/websocket-api-mappings.html).
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - API mapping identifier.
+
+## Import
+
+`awsApigatewayv2ApiMapping` can be imported by using the API mapping identifier and domain name, e.g.,
+
+```
+$ terraform import aws_apigatewayv2_api_mapping.example 1122334/ws-api.example.com
+```
+
+<!-- cache-key: cdktf-0.17.0-pre.15 input-45306f9cdf0c633abb0738775ad43b093cd12abc79e6c4d107b4eb894b7ba50b -->
