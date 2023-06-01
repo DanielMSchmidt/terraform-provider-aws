@@ -1,0 +1,43 @@
+---
+subcategory: "API Gateway"
+layout: "aws"
+page_title: "AWS: aws_api_gateway_authorizer"
+description: |-
+  Provides details about a specific API Gateway Authorizer.
+---
+
+# Data Source: aws_api_gateway_authorizer
+
+Provides details about a specific API Gateway Authorizer.
+
+## Example Usage
+
+```terraform
+data "aws_api_gateway_authorizer" "example" {
+  rest_api_id   = aws_api_gateway_rest_api.example.id
+  authorizer_id = data.aws_api_gateway_authorizers.example.ids[0]
+}
+```
+
+## Argument Reference
+
+The following arguments are required:
+
+* `authorizerId` - (Required) Authorizer identifier.
+* `restApiId` - (Required) ID of the associated REST API.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `arn` - ARN of the API Gateway Authorizer.
+* `authorizerCredentials` - Credentials required for the authorizer.
+* `authorizerResultTtlInSeconds` - TTL of cached authorizer results in seconds.
+* `authorizerUri` - Authorizer's Uniform Resource Identifier (URI).
+* `identitySource` - Source of the identity in an incoming request.
+* `identityValidationExpression` - Validation expression for the incoming identity.
+* `name` - Name of the authorizer.
+* `providerArns` - List of the Amazon Cognito user pool ARNs.
+* `type` - Type of the authorizer.
+
+<!-- cache-key: cdktf-0.17.0-pre.15 input-ef9efa6af14301ea815ba3e6171f1756788bf9e327e649acbf31dbfae98c6fe2 -->
