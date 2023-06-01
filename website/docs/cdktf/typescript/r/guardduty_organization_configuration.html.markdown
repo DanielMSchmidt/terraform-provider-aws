@@ -1,0 +1,119 @@
+---
+subcategory: "GuardDuty"
+layout: "aws"
+page_title: "AWS: aws_guardduty_organization_configuration"
+description: |-
+  Manages the GuardDuty Organization Configuration
+---
+
+# Resource: aws_guardduty_organization_configuration
+
+Manages the GuardDuty Organization Configuration in the current AWS Region. The AWS account utilizing this resource must have been assigned as a delegated Organization administrator account, e.g., via the [`awsGuarddutyOrganizationAdminAccount` resource](/docs/providers/aws/r/guardduty_organization_admin_account.html). More information about Organizations support in GuardDuty can be found in the [GuardDuty User Guide](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_organizations.html).
+
+~> **NOTE:** This is an advanced Terraform resource. Terraform will automatically assume management of the GuardDuty Organization Configuration without import and perform no actions on removal from the Terraform configuration.
+
+## Example Usage
+
+```terraform
+resource "aws_guardduty_detector" "example" {
+  enable = true
+}
+
+resource "aws_guardduty_organization_configuration" "example" {
+  auto_enable_organization_members = "ALL"
+
+  detector_id = aws_guardduty_detector.example.id
+
+  datasources {
+    s3_logs {
+      auto_enable = true
+    }
+    kubernetes {
+      audit_logs {
+        enable = true
+      }
+    }
+    malware_protection {
+      scan_ec2_instance_with_findings {
+        ebs_volumes {
+          auto_enable = true
+        }
+      }
+    }
+  }
+}
+```
+
+## Argument Reference
+
+~> **NOTE:** One of `autoEnable` or `autoEnableOrganizationMembers` must be specified.
+
+The following arguments are supported:
+
+* `autoEnable` - (Optional) *Deprecated:* Use `autoEnableOrganizationMembers` instead. When this setting is enabled, all new accounts that are created in, or added to, the organization are added as a member accounts of the organization’s GuardDuty delegated administrator and GuardDuty is enabled in that AWS Region.
+* `autoEnableOrganizationMembers` - (Optional) Indicates the auto-enablement configuration of GuardDuty for the member accounts in the organization. Valid values are `all`, `new`, `none`.
+* `detectorId` - (Required) The detector ID of the GuardDuty account.
+* `datasources` - (Optional) Configuration for the collected datasources.
+
+`datasources` supports the following:
+
+* `s3Logs` - (Optional) Enable S3 Protection automatically for new member accounts.
+* `kubernetes` - (Optional) Enable Kubernetes Audit Logs Monitoring automatically for new member accounts.
+* `malwareProtection` - (Optional) Enable Malware Protection automatically for new member accounts.
+
+### S3 Logs
+
+`s3Logs` block supports the following:
+
+* `autoEnable` - (Optional) Set to `true` if you want S3 data event logs to be automatically enabled for new members of the organization. Default: `false`
+
+### Kubernetes
+
+`kubernetes` block supports the following:
+
+* `auditLogs` - (Required) Enable Kubernetes Audit Logs Monitoring automatically for new member accounts. [Kubernetes protection](https://docs.aws.amazon.com/guardduty/latest/ug/kubernetes-protection.html).
+  See [Kubernetes Audit Logs](#kubernetes-audit-logs) below for more details.
+
+#### Kubernetes Audit Logs
+
+The `auditLogs` block supports the following:
+
+* `enable` - (Required) If true, enables Kubernetes audit logs as a data source for [Kubernetes protection](https://docs.aws.amazon.com/guardduty/latest/ug/kubernetes-protection.html).
+  Defaults to `true`.
+
+### Malware Protection
+
+`malwareProtection` block supports the following:
+
+* `scanEc2InstanceWithFindings` - (Required) Configure whether [Malware Protection](https://docs.aws.amazon.com/guardduty/latest/ug/malware-protection.html) for EC2 instances with findings should be auto-enabled for new members joining the organization.
+   See [Scan EC2 instance with findings](#scan-ec2-instance-with-findings) below for more details.
+
+#### Scan EC2 instance with findings
+
+The `scanEc2InstanceWithFindings` block supports the following:
+
+* `ebsVolumes` - (Required) Configure whether scanning EBS volumes should be auto-enabled for new members joining the organization
+  See [EBS volumes](#ebs-volumes) below for more details.
+
+#### EBS volumes
+
+The `ebsVolumes` block supports the following:
+
+* `autoEnable` - (Required) If true, enables [Malware Protection](https://docs.aws.amazon.com/guardduty/latest/ug/malware-protection.html) for all new accounts joining the organization.
+  Defaults to `true`.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - Identifier of the GuardDuty Detector.
+
+## Import
+
+GuardDuty Organization Configurations can be imported using the GuardDuty Detector ID, e.g.,
+
+```
+$ terraform import aws_guardduty_organization_configuration.example 00b00fd5aecc0ab60a708659477e9617
+```
+
+<!-- cache-key: cdktf-0.17.0-pre.15 input-ad9525b0c7bf296d4d0edd6d4e591dfd4b9a584b43a22e48426fe4223288564a -->
