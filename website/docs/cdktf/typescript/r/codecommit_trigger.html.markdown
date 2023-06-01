@@ -1,0 +1,50 @@
+---
+subcategory: "CodeCommit"
+layout: "aws"
+page_title: "AWS: aws_codecommit_trigger"
+description: |-
+  Provides a CodeCommit Trigger Resource.
+---
+
+# Resource: aws_codecommit_trigger
+
+Provides a CodeCommit Trigger Resource.
+
+~> **NOTE:** Terraform currently can create only one trigger per repository, even if multiple aws_codecommit_trigger resources are defined. Moreover, creating triggers with Terraform will delete all other triggers in the repository (also manually-created triggers).
+
+## Example Usage
+
+```terraform
+resource "aws_codecommit_repository" "test" {
+  repository_name = "test"
+}
+
+resource "aws_codecommit_trigger" "test" {
+  repository_name = aws_codecommit_repository.test.repository_name
+
+  trigger {
+    name            = "all"
+    events          = ["all"]
+    destination_arn = aws_sns_topic.test.arn
+  }
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `repositoryName` - (Required) The name for the repository. This needs to be less than 100 characters.
+* `name` - (Required) The name of the trigger.
+* `destinationArn` - (Required) The ARN of the resource that is the target for a trigger. For example, the ARN of a topic in Amazon Simple Notification Service (SNS).
+* `customData` - (Optional) Any custom data associated with the trigger that will be included in the information sent to the target of the trigger.
+* `branches` - (Optional) The branches that will be included in the trigger configuration. If no branches are specified, the trigger will apply to all branches.
+* `events` - (Required) The repository events that will cause the trigger to run actions in another service, such as sending a notification through Amazon Simple Notification Service (SNS). If no events are specified, the trigger will run for all repository events. Event types include: `all`, `updateReference`, `createReference`, `deleteReference`.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `configurationId` - System-generated unique identifier.
+
+<!-- cache-key: cdktf-0.17.0-pre.15 input-026e8404f4849ccb5602a215340ce907bd58654b0a0ead7837c96145aeee4e6e -->
