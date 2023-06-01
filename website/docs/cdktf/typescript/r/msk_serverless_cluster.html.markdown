@@ -1,0 +1,84 @@
+---
+subcategory: "Managed Streaming for Kafka"
+layout: "aws"
+page_title: "AWS: aws_msk_serverless_cluster"
+description: |-
+  Terraform resource for managing an Amazon MSK Serverless cluster.
+---
+
+# Resource: aws_msk_serverless_cluster
+
+Manages an Amazon MSK Serverless cluster.
+
+-> **Note:** To manage a _provisioned_ Amazon MSK cluster, use the [`awsMskCluster`](/docs/providers/aws/r/msk_cluster.html) resource.
+
+## Example Usage
+
+```terraform
+resource "aws_msk_serverless_cluster" "example" {
+  cluster_name = "Example"
+
+  vpc_config {
+    subnet_ids         = aws_subnet.example[*].id
+    security_group_ids = [aws_security_group.example.id]
+  }
+
+  client_authentication {
+    sasl {
+      iam {
+        enabled = true
+      }
+    }
+  }
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `clientAuthentication` - (Required) Specifies client authentication information for the serverless cluster. See below.
+* `clusterName` - (Required) The name of the serverless cluster.
+* `tags` - (Optional) A map of tags to assign to the resource. If configured with a provider [`defaultTags` configuration block](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block) present, tags with matching keys will overwrite those defined at the provider-level.
+* `vpcConfig` - (Required) VPC configuration information. See below.
+
+### client_authentication Argument Reference
+
+* `sasl` - (Required) Details for client authentication using SASL. See below.
+
+### sasl Argument Reference
+
+* `iam` - (Required) Details for client authentication using IAM. See below.
+
+### iam Argument Reference
+
+* `enabled` - (Required) Whether SASL/IAM authentication is enabled or not.
+
+### vpc_config Argument Reference
+
+* `securityGroupIds` - (Optional) Specifies up to five security groups that control inbound and outbound traffic for the serverless cluster.
+* `subnetIds` - (Required) A list of subnets in at least two different Availability Zones that host your client applications.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `arn` - The ARN of the serverless cluster.
+* `tagsAll` - A map of tags assigned to the resource, including those inherited from the provider [`defaultTags` configuration block](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block).
+
+## Timeouts
+
+[Configuration options](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts):
+
+* `create` - (Default `120M`)
+* `delete` - (Default `120M`)
+
+## Import
+
+MSK serverless clusters can be imported using the cluster `arn`, e.g.,
+
+```
+$ terraform import aws_msk_serverless_cluster.example arn:aws:kafka:us-west-2:123456789012:cluster/example/279c0212-d057-4dba-9aa9-1c4e5a25bfc7-3
+```
+
+<!-- cache-key: cdktf-0.17.0-pre.15 input-2825f34d7b8c6b818832ec65ede33854113af67cff433dbe26cda5ba6fc1501a -->
