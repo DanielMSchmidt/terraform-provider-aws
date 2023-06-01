@@ -1,0 +1,35 @@
+---
+subcategory: "Location"
+layout: "aws"
+page_title: "AWS: aws_location_tracker_association"
+description: |-
+    Retrieve information about a Location Service Tracker Association.
+---
+
+# Data Source: aws_location_tracker_association
+
+Retrieve information about a Location Service Tracker Association.
+
+## Example Usage
+
+### Basic Usage
+
+```terraform
+data "aws_location_tracker_association" "example" {
+  consumer_arn = "arn:aws:geo:region:account-id:geofence-collection/ExampleGeofenceCollectionConsumer"
+  tracker_name = "example"
+}
+```
+
+## Argument Reference
+
+The following arguments are required:
+
+* `consumerArn` - (Required) ARN of the geofence collection associated to tracker resource.
+* `trackerName` - (Required) Name of the tracker resource associated with a geofence collection.
+
+## Attributes Reference
+
+No additional attributes are exported.
+
+<!-- cache-key: cdktf-0.17.0-pre.15 input-45b3b0fb2c4a6f15211ac39cfd7c5e926a04dc865b852d6e3a3b16b794a6256c -->
