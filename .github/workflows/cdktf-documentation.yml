@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   cdktfDocs:
-    uses: hashicorp/terraform-cdk/.github/workflows/registry-docs-pr-based.yml@55f97053f0ad89ca03b6577de4fbcc31f848e825
+    uses: hashicorp/terraform-cdk/.github/workflows/registry-docs-pr-based.yml@98e05c55799802e5457fddc8d69a1c5c6a5f6e0b
     secrets:
       GH_PR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     with:
